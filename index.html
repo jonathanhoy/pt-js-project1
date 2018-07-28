@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>B9 Baseball</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<div class="wrapper">
+		<h1>Bottom-of-the-Ninth Baseball</h1>
+		<p>It's the bottom of the ninth inning and your team is down 3 runs to 2 runs. Can you step up to the plate and win? Click the Pitch button and open the console to begin!</p>
+		<p>Console functions</p>
+		<ul>
+			<li><span>showScore()</span> - Typing this function will alert the current score.</li>
+			<li><span>count</span> - Typing this into the console will display the current cout as well as outs.</li>
+			<li><span>bases</span> - Typing this into the console will display the current baserunners.</li>
+		</ul>
+
+		<button class="play">Pitch!</button>
+		
+		<div class="scoreboard">
+			<div class="displayCount">
+				<div class="balls">
+					<p>Balls</p>
+				</div>
+				<div class="ballCircles">
+					<div class="circle ball ball1"></div>
+					<div class="circle ball ball2"></div>
+					<div class="circle ball ball3"></div>
+				</div>
+				<div class="strikes">
+					<p>Strikes</p>
+				</div>
+				<div class="strikeCircles">
+					<div class="circle strike strike1"></div>
+					<div class="circle strike strike2"></div>
+				</div>
+				<div class="outs">
+					<p>Outs</p>
+				</div>
+				<div class="outCircles">
+					<div class="circle out out1"></div>
+					<div class="circle out out2"></div>
+				</div>
+			</div>
+			<div class="displayBases">
+				<div class="base base3">
+					<p>3</p>
+				</div>
+				<div class="base base2">
+					<p>2</p>
+				</div>
+				<div class="base base1">
+					<p>1</p>
+				</div>
+			</div>
+		</div>
+
+		<button class="hardmode">Hard Mode</button>
+	</div>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script>
+
+		// Pitcher makes a pitch, the batter (user) must decide to either SWING or DON'T SWING (PROMPT)
+			// If batter SWINGS, possible outcomes are MISS - STRIKE, CONTACT - FLY OUT, CONTACT - HIT, CONTACT - HOME RUN based on RNG
+				// MISS - STRIKE
+				// CONTACT
+					// CONTACT - FLY OUT
+					// CONTACT - HIT
+					// CONTACT - HOME RUN
+			// If batter DOESN'T SWING, possible outcomes are BALL or STRIKE based on RNG
+			// Count, along with Outs, stored in an object - 'Count'
+			// Score in an object = 'Score'
+
+		// If batter gets a HIT, can be SINGLE, DOUBLE, or TRIPLE based on RNG
+			// Based on type of hit, that base will be occupied with bases stored in an object - 'Bases'
+				// If batter HITS SINGLE with player ON THIRD = TRUE, 1 run is added to home team's score
+				// If batter HITS SINGLE with player ON THIRD = TRUE and player ON SECOND = TRUE, 2 runs are added to home team's score and home team WINS
+
+				// If batter HITS DOUBLE with player ON THIRD = TRUE or player ON SECOND = TRUE, 1 run is added to home team's score
+				// If batter HITS DOUBLE with player ON THIRD = TRUE and player ON SECOND = TRUE, 2 runs are added to home team's score and home team WINS
+
+				// If batter HITS TRIPLE with player ON THIRD = TRUE or player ON SECOND = TRUE or player ON FIRST = TRUE, 1 run is added to home team's score
+				// If batter HITS TRIPLE with player ON THIRD = TRUE and player ON SECOND = TRUE and player ON FIRST = TRUE, 2 runs are added to home team's score and home team WINS
+
+		// If pitcher strikes out batter, 1 out is added to OUT property in 'Count' object
+			// Game is over when there are 3 outs
+		// If pitcher walks batter, batter goes to first base if player ON FIRST = FALSE. If player ON FIRST = TRUE, then player ON SECOND = TRUE. If player ON SECOND = TRUE, then player ON THIRD = TRUE.
+
+
+		const score = {
+			awayTeamScore: 3,
+			homeTeamScore: 2
+		};
+
+		const count = {
+			balls: 0,
+			strikes: 0,
+			outs: 0
+		};
+
+		const bases = {
+			playerOnFirst: false,
+			playerOnSecond: false,
+			playerOnThird: false
+		};
+
+    let showScore = function () {
+    	alert(`Away Team ${score.awayTeamScore} - ${score.homeTeamScore} Home Team`);
+    }
+
+    let resetCount = function () {
+    	count.balls = 0;
+    	count.strikes = 0;
+    };
+
+    let alertWin = function () {
+    	alert(`You win!`);
+    	alert(`Refresh the page to play again!`);
+    	resetCount();
+    	bases.playerOnFirst = false;
+    	bases.playerOnSecond = false;
+    	bases.playerOnThird = false;
+    	count.outs = 0;
+    }
+
+    let alertLoss = function () {
+    	alert(`You lose! We'll get 'em tomorrow...`);
+    	alert(`Refresh the page to play again!`);
+    	resetCount();
+    	bases.playerOnFirst = false;
+    	bases.playerOnSecond = false;
+    	bases.playerOnThird = false;
+    	count.outs = 0;
+    }
+
+		let rng = function () {
+        return Math.floor((Math.random() * 100) + 1);
+      };
+
+    // Primary pitch function
+		const pitch = function () {
+
+			// Pitch prompt
+			let action = prompt(`Here comes the pitch... will you SWING?`).toLowerCase();
+
+			// Swing
+			if (action === `swing` || action === `yes`) {
+				// Swing, miss
+				if (rng() <= 40) {
+					count.strikes = count.strikes + 1;
+					alert(`Strike ${count.strikes}!`);
+					if (count.strikes === 3) {
+						count.outs = count.outs + 1;
+						resetCount();
+						alert(`Youuuuu're OUT!`);
+						if (count.outs === 3 && score.awayTeamScore > score.homeTeamScore) {
+							showScore();
+							alertLoss();
+						};
+						if (count.outs === 3 && score.awayTeamScore === score.homeTeamScore) {
+							showScore();
+							alert(`Well, well, well... it looks like we're going into extra innings...`);
+							alert(`We'll save that for another day...`);
+							alert(`Refresh the page to play again!`);
+						};
+					};
+				// Swing, contact
+				} else {
+					// Swing, contact, fly out
+					if (rng() <= 20) {
+						count.outs = count.outs + 1;
+						resetCount();
+						alert(`Contact!`);
+						alert(`Fly out... ${count.outs} out.`);
+						if (count.outs === 3 && score.homeTeamScore < score.awayTeamScore) {
+							showScore();
+							alertLoss();
+						};
+						if (count.outs === 3 && score.homeTeamScore === score.awayTeamScore) {
+							showScore();
+							alert(`Well, well, well... it looks like we're going into extra innings...`);
+							alert(`We'll save that for another day...`);
+							alert(`Refresh the page to play again!`);
+						};
+						if (bases.playerOnThird === true && count.outs <= 1) {
+							score.homeTeamScore = score.homeTeamScore + 1;
+							bases.playerOnThird = false;
+							alert(`Deep fly out! The base runner on third base tags up and scores!`);
+							showScore();
+							if (score.homeTeamScore > score.awayTeamScore) {
+								alertWin();
+							};
+						};
+					// Swing, contact, hit
+					} else {
+						// Home run
+						if (rng() >= 90) {
+							if (bases.playerOnFirst === true && bases.playerOnSecond === true && bases.playerOnThird === true) {
+								score.homeTeamScore = score.homeTeamScore + 4;
+								bases.playerOnFirst = false;
+								bases.playerOnSecond = false;
+								bases.playerOnThird = false;
+								resetCount();
+								alert(`Deep drive to left field! This one's outta here! No doubt about it! Good night, GRAND SLAM!!!`);
+								showScore();
+								if (score.homeTeamScore > score.awayTeamScore) {
+									alertWin();
+								};
+							} else if (bases.playerOnFirst === true && bases.playerOnSecond === true || bases.playerOnSecond === true && bases.playerOnThird === true || bases.playerOnFirst === true && bases.playerOnThird === true) {
+								score.homeTeamScore = score.homeTeamScore + 3;
+								bases.playerOnFirst = false;
+								bases.playerOnSecond = false;
+								bases.playerOnThird = false;
+								resetCount();
+								alert(`It's a blast to deadaway centre! The centre fielder watches the ball soar over his head! It's a three-run home run!`);
+								showScore();
+								if (score.homeTeamScore > score.awayTeamScore) {
+									alertWin();
+								};
+							} else if (bases.playerOnFirst === true || bases.playerOnSecond === true || bases.playerOnThird === true) {
+								score.homeTeamScore = score.homeTeamScore + 2;
+								bases.playerOnFirst = false;
+								bases.playerOnSecond = false;
+								bases.playerOnThird = false;
+								resetCount();
+								alert(`This one's carrying! The ball flies past the boards in right field! Two-run home run!`);
+								showScore();
+								if (score.homeTeamScore > score.awayTeamScore) {
+									alertWin();
+								};
+							} else {
+								score.homeTeamScore = score.homeTeamScore + 1;
+								bases.playerOnFirst = false;
+								bases.playerOnSecond = false;
+								bases.playerOnThird = false;
+								resetCount();
+								alert(`Deep drive to left field! Get up ball! Get up ball! Gone! Home run!`);
+								showScore();
+								if (score.homeTeamScore > score.awayTeamScore) {
+									alert("Walk off home run!")
+									alertWin();
+								};
+							};
+						// Base hits	
+						} else if (bases.playerOnFirst === true && bases.playerOnSecond === true && bases.playerOnThird === true) {
+							bases.playerOnSecond = false;
+							score.homeTeamScore = score.homeTeamScore + 2;
+							resetCount();
+							alert(`Base hit! A fielding error allows the base runners on third base and second base to score!`);
+							showScore();
+							if (score.homeTeamScore > score.awayTeamScore) {
+								alertWin();
+							};
+						} else if (bases.playerOnFirst === true && bases.playerOnSecond === true) {
+							bases.playerOnThird = true;
+							bases.playerOnSecond = false;
+							score.homeTeamScore = score.homeTeamScore + 1;
+							resetCount();
+							alert(`Base hit in the gap!`);
+							alert(`The centre fielder snatches the ball and makes the throw to home plate!`);
+							alert(`The runner at second base slides home safely!`);
+							alert(`The runner at first base advances to third base.`);
+							showScore();
+							if (score.homeTeamScore > score.awayTeamScore) {
+								alertWin();
+							};
+						} else if (bases.playerOnFirst === true && bases.playerOnThird === true) {
+							bases.playerOnThird = false;
+							bases.playerOnSecond = true;
+							score.homeTeamScore = score.homeTeamScore + 1;
+							resetCount();
+							alert(`Base hit!`);
+							alert(`It's a line drive right over the head of the second baseman!`);
+							alert(`The runner at third base trots home!`);
+							showScore();
+							if (score.homeTeamScore > score.awayTeamScore) {
+								alertWin();
+							};
+						} else if (bases.playerOnFirst === true) {
+							bases.playerOnSecond = true;
+							resetCount();
+							alert(`Base hit! There is now a player on first base and a player on second base.`)
+						} else {
+							bases.playerOnFirst = true;
+							resetCount();
+							alert(`Contact!`);
+							alert(`Base hit! There is now a player on first base.`);
+						}
+					}
+				}
+			};
+
+			// No swing - balls and strikes
+			if (action === `don't swing` || action === `dont swing` || action === `don't` || action === `dont` || action === `no`) {
+				// Balls
+				if (rng() <= 40) {
+					count.balls = count.balls + 1;
+					alert(`Ball ${count.balls}!`);
+					if (count.balls === 4) {
+						resetCount();
+						alert(`Take your base!`);
+						if (bases.playerOnThird === true && bases.playerOnSecond === true && bases.playerOnFirst === true) {
+							score.homeTeamScore = score.homeTeamScore + 1;
+							if (score.homeTeamScore > score.awayTeamScore) {
+								showScore();
+								alertWin();
+							} else {
+								showScore();
+								alert(`Based-loaded walk!`);
+							}
+						} else if (bases.playerOnSecond === true && bases.playerOnFirst === true) {
+							bases.playerOnThird = true;
+							alert(`Bases loaded!`);
+						} else if (bases.playerOnFirst === true) {
+							bases.playerOnSecond = true;
+							alert(`There are now players on first base and second base.`);
+						} else {
+							bases.playerOnFirst = true;
+							alert(`There is now a player on first base.`);
+						};
+					};
+				// Strikes
+				} else {
+					count.strikes = count.strikes + 1;
+					alert(`Strike ${count.strikes}!`);
+					if (count.strikes === 3) {
+						count.outs = count.outs + 1;
+						resetCount();
+						alert(`Youuuuu're OUT!`);
+						if (count.outs === 3 && score.awayTeamScore > score.homeTeamScore) {
+							showScore();
+							alertLoss();
+						};
+						if (count.outs === 3 && score.awayTeamScore === score.homeTeamScore) {
+							showScore();
+							alert(`Well, well, well... it looks like we're going into extra innings...`);
+							alert(`We'll save that for another day...`);
+							alert(`Refresh the page to play again!`);
+						};
+					};
+				};
+			};
+
+			if (bases.playerOnFirst === true) {
+				$('.base1').addClass('filled');
+			} else {
+				$('.base1').removeClass('filled');
+			};
+			if (bases.playerOnSecond === true) {
+				$('.base2').addClass('filled');
+			} else {
+				$('.base2').removeClass('filled');
+			};
+			if (bases.playerOnThird === true) {
+				$('.base3').addClass('filled');
+			} else {
+				$('.base3').removeClass('filled');
+			};
+
+			if (count.strikes === 0) {
+				$('.strike').removeClass('filled');
+			}
+			if (count.strikes === 1) {
+				$('.strike1').addClass('filled');
+			}
+			if (count.strikes === 2) {
+				$('.strike2').addClass('filled');
+			}
+
+			if (count.balls === 0) {
+				$('.ball').removeClass('filled');
+			}
+			if (count.balls === 1) {
+				$('.ball1').addClass('filled');
+			} 
+			if (count.balls === 2) {
+				$('.ball2').addClass('filled');
+			}
+			if (count.balls === 3) {
+				$('.ball3').addClass('filled');
+			}
+
+			if (count.outs === 0) {
+				$('.out').removeClass('filled');
+			}
+			if (count.outs === 1) {
+				$('.out1').addClass('filled');
+			}
+			if (count.outs === 2) {
+				$('.out2').addClass('filled');
+			}
+		};
+
+		let hardmode = function () {
+			score.awayTeamScore = score.awayTeamScore + 3;
+			alert(`So, you like a challenge? How's this for a challenge? Good luck...`);
+			showScore();
+		}
+
+		$(function () {
+			console.log("Play ball!");
+			$('.play').click(function () {
+				pitch();
+			});
+			$('.hardmode').click(function () {
+				hardmode();
+			});
+		});
+
+	</script>
+</body>
+</html>
